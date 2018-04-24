@@ -9,8 +9,8 @@ SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 find_package(NTL REQUIRED)
 find_package(GMP REQUIRED)
 
-add_executable(random random_subsets.cpp)
-add_executable(middle meet_in_middle.cpp)
+add_executable(random random_subsets.cpp util.h)
+add_executable(middle meet_in_middle.cpp util.h)
 
 target_link_libraries(middle ${NTL_LIBRARY} ${GMP_LIBRARIES} m)
 target_link_libraries(random ${NTL_LIBRARY} ${GMP_LIBRARIES} m)
