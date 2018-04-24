@@ -136,6 +136,7 @@ void Util::saveIfBetter(int size, const int* sample) {
         ZZ difference(sum - threshold);
         cout << "Found a better one: " << log(difference) / log(10) << endl;
         saveBest(size, betterSample, difference);
+        delete[] betterSample;
     }
 }
 
@@ -150,8 +151,6 @@ void Util::saveBest(int sampleSize, const int *betterSample, const ZZ &differenc
         }
     ofstream out(this->fileName);
     out << setw(2) << j << endl;
-    delete[] betterSample;
-
 }
 
 #endif //RANDOM_SHARED_H
