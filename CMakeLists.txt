@@ -8,7 +8,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 find_package(NTL REQUIRED)
 find_package(GMP REQUIRED)
 
-add_executable(middle meet_in_middle.cpp)
+add_executable(middle random_subsets.cpp)
 
 target_link_libraries(middle ${NTL_LIBRARY} ${GMP_LIBRARIES} m)
 target_include_directories(middle PUBLIC /usr/local/include /usr/local/Cellar/nlohmann_json/3.1.2/include)
