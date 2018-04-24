@@ -21,64 +21,6 @@ ZZ* fillArray(int n) {
     }
     return array;
 }
-//
-//
-//
-//void calcSubArray(ZZ arr[], ZZ fillMe[], int n, int offset) {
-//    for (int i = 0; i <(i<<n); ++i) {
-//        ZZ sum(0);
-//        for (int j = 0; j < n; ++j) {
-//            if (i & (1<<j)) {
-//                sum += arr[j + offset];
-//            }
-//        }
-//        fillMe[i] = sum;
-//    }
-//}
-//
-//ZZ solveSubsetSum(ZZ givenArray[], int n, ZZ threshold) {
-//    cout << givenArray[0] << endl;
-//    cout << "Computing first subarray" << endl;
-//    ZZ first[2^50];
-//    calcSubArray(givenArray, first, n/2, 0);
-//
-//    cout << "Computing second subarray" << endl;
-//    ZZ second[2^50];
-//    calcSubArray(givenArray, second, (n - n/2), 0);
-//
-//    int sizeFirst(1<<(n/2));
-//    int sizeSecond(1<<(n - n/2));
-//
-//    cout << "Sorting" << endl;
-//    sort(second, second + sizeSecond);
-//    cout << "Finished sorting" << endl;
-//
-//    ZZ max(0);
-//
-//    cout << "Traversing all sums?" << endl;
-//    for(int i = 0; i < sizeFirst; ++i) {
-//        if(first[i] <= threshold) {
-//            // lower_bound() returns the first address
-//            // which has value greater than or equal to
-//            // S-X[i].
-//            ZZ *p = lower_bound(second, second + sizeSecond, threshold - first[i]);
-//
-//            // If S-X[i] was not in array Y then decrease
-//            // p by 1
-//            if (*p == sizeSecond || second[to_int(*p)] != (threshold - first[i])) {
-//                *p = *p - 1;
-//            }
-//
-//            if ((second[to_int(*p)] + first[i]) > max) {
-//                cout << max << endl;
-//                max = second[to_int(*p)] + first[i];
-//            }
-//        }
-//    }
-//    cout << "Finished traversing all sums" << endl;
-//
-//    return max;
-//}
 
 int main() {
     int n = 100;
@@ -103,7 +45,7 @@ int main() {
     if (input.find("logged_difference") != input.end()) {
         double diff = input["logged_difference"];
         cout << "Previous best: " << diff << endl;
-        min = to_ZZ(floor(pow(to_RR(10), to_RR(diff))));
+        min = threshold + to_ZZ(pow(to_RR(10), to_RR(diff)));
     }
     else {
         cout << "I was unable to find a previous result. Using default minimum" << endl;
@@ -147,13 +89,6 @@ int main() {
         }
         delete[] sample;
     } while(true);
-
-
-//    ZZ test[] = {to_ZZ(3), to_ZZ(34), to_ZZ(4), to_ZZ(12), to_ZZ(5), to_ZZ(2)};
-//    int anotherIndex = 6;
-//    ZZ testThreshold(10);
-//    ZZ result(solveSubsetSum(test, anotherIndex, testThreshold));
-//    cout << "Largest value smaller than or equal to given sum is " << result << endl;
 
     return 0;
 }
