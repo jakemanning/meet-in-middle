@@ -54,7 +54,8 @@ int main() {
     }
 
     do {
-        uniform_int_distribution<int> arraySizeDist(30, n - 1); // To get sample size (30 is the smallest possible sum with n=100)
+        uniform_int_distribution<int> arraySizeDist(30, n -
+                                                        1); // To get sample size (30 is the smallest possible sum with n=100)
         int sampleSize = arraySizeDist(mt);
         auto *sample = new int[sampleSize];
         uniform_int_distribution<int> sampleDistribution(0, sampleSize - 1);
