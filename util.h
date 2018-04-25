@@ -53,14 +53,14 @@ Util::Util(int n, int id, string fileName) {
     this->n = n;
     this->fileName = std::move(fileName);
     this->array = fillArray();
-    this->threshold = ZZ(100);//to_ZZ(power(to_ZZ(10), 94) * 2 * id);
+    this->threshold = to_ZZ(power(to_ZZ(10), 94) * 2 * id);
     this->currentMinimum = readPreviousMin();
     this->minPossibleElementsInSubset = smallestSubsetWithSum(this->array, n, this->threshold);
 }
 
 ZZ *Util::fillArray() {
     auto *array = new ZZ[this->n];
-    ifstream in("M_test.json");
+    ifstream in("M.json");
     json input;
     input = getJson(in, input);
 

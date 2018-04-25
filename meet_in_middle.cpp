@@ -24,7 +24,7 @@ public:
     } CompareSum;
 };
 
-Subset first[1024], second[1024];
+Subset first[33554432], second[33554432];
 
 void calculateSubsets(ZZ *a, Subset *possibleSubsets, int n, int offset) {
     for (int i = 0; i < (1 << n); i++) {
@@ -91,7 +91,7 @@ Subset solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Subset *first
 
 
 int main() {
-    Util util(20, 113027942, "middle_lowest_difference.json");
+    Util util(100, 113027942, "middle_lowest_difference.json");
     int meetInMiddleSize = util.n / 2;
     int quarterToIncludeSize = util.n / 4;
     int bothSize = meetInMiddleSize + quarterToIncludeSize;
@@ -100,11 +100,8 @@ int main() {
         int *removedQuarterIndices = util.takeIndexSample(bothSize, util.n);
         ZZ *removedQuarter = util.convertToZZ(bothSize, util.array,
                                               removedQuarterIndices); // Takes n values from the original 100 (discards (100 - n) values)
-//        util.outputArray(removedQuarterIndices, bothSize);
-//        util.outputArray(removedQuarter, bothSize);
         int *meetInMiddleIndices = util.takeIndexSample(meetInMiddleSize,
                                                         bothSize); // Takes 50 indices from the 75 possible values
-//        util.outputArray(meetInMiddleIndices, meetInMiddleSize);
         set<int> quarterSet; // The quarter that we will definitely include
         for (int i = 0; i < bothSize; ++i) {
             quarterSet.insert(i);
@@ -118,13 +115,10 @@ int main() {
         for (auto it = quarterSet.begin(); it != quarterSet.end(); ++it, ++index) {
             quarterToInclude[index] = *it;
         }
-//        util.outputArray(quarterToInclude, quarterToIncludeSize);
 
         ZZ sum(0);
         ZZ *middle = util.convertToZZ(meetInMiddleSize, removedQuarter, meetInMiddleIndices);
-//        util.outputArray(middle, meetInMiddleSize);
         ZZ *quarter = util.convertToZZ(quarterToIncludeSize, removedQuarter, quarterToInclude);
-//        util.outputArray(quarter, quarterToIncludeSize);
         for (int i = 0; i < quarterToIncludeSize; ++i) {
             sum += quarter[i];
         }
@@ -142,7 +136,6 @@ int main() {
             actualSum += util.array[actualIndex];
             arr[myIndex] = actualIndex;
         }
-//        util.outputArray(arr, static_cast<int>(res.indices.size()));
         util.saveIfBetter(static_cast<int>(res.indices.size()), arr, actualSum);
         cout << "Actual sum: " << actualSum << endl;
 
