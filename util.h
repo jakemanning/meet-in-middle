@@ -16,8 +16,6 @@ using namespace std;
 
 class Util {
 private:
-
-    ZZ threshold;
     string fileName;
     mt19937 mt{};
     ZZ currentMinimum;
@@ -30,6 +28,7 @@ private:
     int smallestSubsetWithSum(ZZ arr[], int n, const ZZ &threshold);
 public:
     int n;
+    ZZ threshold;
     ZZ *array;
     int *takeRandomSample(); // Random sample of indices
     json &getJson(ifstream &in, json &input) const;
