@@ -16,17 +16,15 @@ using namespace std;
 
 class Util {
 private:
-    string fileName;
     mt19937 mt{};
-    ZZ currentMinimum;
-    ZZ sum;
     int minPossibleElementsInSubset = 0;
     int sampleSize = 0;
     ZZ *fillArray();
     ZZ readPreviousMin();
-    void saveBest(int sampleSize, const int *betterSample, const ZZ &difference);
+    void saveBest(int sampleSize, const int *betterSample, double logDifference);
     int smallestSubsetWithSum(ZZ arr[], int n, const ZZ &threshold);
 public:
+    ZZ currentMinimum;
     int n;
     ZZ threshold;
     ZZ *array;
@@ -34,14 +32,17 @@ public:
     json &getJson(ifstream &in, json &input) const;
     ZZ minValue(const json &input) const;
     int sizeOfFirstSubsetOverThreshold(const int *sample);
-    void saveIfBetter(int size, const int *sample);
+    void saveIfBetter(int size, const int *sample, const ZZ &sum);
     int *takeIndexSample(int sampleSize, int arraySize);
     ZZ *takeValueSample(int sampleSize, int arraySize, ZZ *original);
+    ZZ *convertToZZ(int sampleSize, const ZZ *original, const int *indices) const;
+    template <typename T> void outputArray(T *array, int size);
 
     Util(int n, int id, string fileName);
     ~Util();
 
-    ZZ *convertToZZ(int sampleSize, const ZZ *original, const int *indices) const;
+    ZZ sum;
+    string fileName;
 };
 
 Util::Util(int n, int id, string fileName) {
@@ -52,19 +53,20 @@ Util::Util(int n, int id, string fileName) {
     this->n = n;
     this->fileName = std::move(fileName);
     this->array = fillArray();
-    this->threshold = to_ZZ(power(to_ZZ(10), 94) * 2 * id);
+    this->threshold = ZZ(100);//to_ZZ(power(to_ZZ(10), 94) * 2 * id);
     this->currentMinimum = readPreviousMin();
     this->minPossibleElementsInSubset = smallestSubsetWithSum(this->array, n, this->threshold);
 }
 
 ZZ *Util::fillArray() {
-    PrimeSeq seq;
     auto *array = new ZZ[this->n];
-    for (int i = 0; i < this->n; ++i) {
-        RR primeNo(seq.next());
-        RR multiplier(1.0 / 3.0);
-        RR res(floor(pow(primeNo, multiplier) * pow(to_RR(10), to_RR(100))));
-        array[i] = to_ZZ(res);
+    ifstream in("M_test.json");
+    json input;
+    input = getJson(in, input);
+
+    for (int i = 0; i < n; ++i) {
+        string s = input[i];
+        array[i] = conv<ZZ>(s.c_str());
     }
     return array;
 }
@@ -80,7 +82,7 @@ json &Util::getJson(ifstream &in, json &input) const {
     try {
         in >> input;
     } catch (json::parse_error &error) {
-        cerr << error.what() << endl;
+        cout << error.what() << endl;
     }
     return input;
 }
@@ -90,10 +92,15 @@ ZZ Util::minValue(const json &input) const {
     if (input.find("logged_difference") != input.end()) {
         double diff = input["logged_difference"];
         cout << "Previous best: " << diff << endl;
-        min = threshold + to_ZZ(pow(to_RR(10), to_RR(diff)));
+        if (diff == 0) {
+            min = threshold;
+        } else {
+            min = threshold + to_ZZ(pow(to_RR(10), to_RR(diff)));
+        }
+
     } else {
         cout << "I was unable to find a previous result. Using default minimum" << endl;
-        min = power(to_ZZ(10), 110);
+        min = power(to_ZZ(10), 250);
     }
     return min;
 }
@@ -151,7 +158,7 @@ int Util::sizeOfFirstSubsetOverThreshold(const int *sample) {
     return betterSampleSize;
 }
 
-void Util::saveIfBetter(int size, const int* sample) {
+void Util::saveIfBetter(int size, const int* sample, const ZZ &sum) {
     if (sum >= threshold && sum < currentMinimum) {
         auto *betterSample = new int[size];
         for (int j = 0; j < size; ++j) {
@@ -160,18 +167,25 @@ void Util::saveIfBetter(int size, const int* sample) {
         sort(betterSample, betterSample + size);
         currentMinimum = sum;
         ZZ difference(sum - threshold);
-        cout << "Found a better one: " << log(difference) / log(10) << endl;
-        saveBest(size, betterSample, difference);
+        double logDifference;
+        if (difference == 0) {
+            logDifference = 0;
+        } else {
+            logDifference = log(difference) / log(10);
+        }
+        cout << "Found a better one: " << logDifference << endl;
+        saveBest(size, betterSample, logDifference);
         delete[] betterSample;
     }
 }
 
-void Util::saveBest(int sampleSize, const int *betterSample, const ZZ &difference) {
+void Util::saveBest(int sampleSize, const int *betterSample, double logDifference) {
     json j;
     auto now = chrono::system_clock::now();
     time_t currentTime = chrono::system_clock::to_time_t(now);
     j["time"] = ctime(&currentTime);
-    j["logged_difference"] = log(difference) / log(10);
+    j["size"] = sampleSize;
+    j["logged_difference"] = logDifference;
     for (int i = 0; i < sampleSize; ++i) {
             j["array"].push_back(betterSample[i]);
         }
@@ -212,6 +226,18 @@ int Util::smallestSubsetWithSum(ZZ arr[], int n, const ZZ &threshold) {
 Util::~Util() {
     delete[] array;
     array = nullptr;
+}
+
+template<typename T>
+void Util::outputArray(T *array, int size)  {
+    cout << "[";
+    for(int i = 0; i < size; ++i) {
+        cout << array[i];
+        if (i + 1 < size) {
+            cout << ", ";
+        }
+    }
+    cout << "]" << endl;
 }
 
 #endif //RANDOM_SHARED_H

@@ -9,7 +9,7 @@ int main() {
     do {
         auto *sample = util.takeRandomSample();
         int subsetOfSample = util.sizeOfFirstSubsetOverThreshold(sample);
-        util.saveIfBetter(subsetOfSample, sample);
+//        util.saveIfBetter(subsetOfSample, sample, to_ZZ(1));
         delete[] sample;
     } while(true);
     return 0;
