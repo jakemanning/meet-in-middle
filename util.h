@@ -173,7 +173,7 @@ void Util::saveIfBetter(int size, const int* sample, const ZZ &sum) {
         } else {
             logDifference = log(difference) / log(10);
         }
-        cout << "Found a better one: " << logDifference << endl;
+        cout << "FOUND A BETTER ONE: " << logDifference << endl;
         saveBest(size, betterSample, logDifference);
         delete[] betterSample;
     }
