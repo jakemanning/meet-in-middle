@@ -1,3 +1,5 @@
+#include <boost/timer/timer.hpp>
+#include <boost/chrono.hpp>
 #include <iostream>
 #include <set>
 #include <thread>
@@ -44,6 +46,7 @@ void calculateSubsets(ZZ *a, Subset *possibleSubsets, int n, int offset, int *in
 Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Subset *first, Subset *second, int *indexArray) {
     // Compute all subset sums of first and second
     // halves
+    boost::timer::auto_cpu_timer subArrayTime;
     cout << "Computing First SubArray" << endl;
     thread calcFirst(calculateSubsets, givenArray, first, n / 2, 0, indexArray);
     cout << "Computing Second SubArray" << endl;
@@ -51,46 +54,28 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Subset *firs
 
     calcFirst.join();
     calcSecond.join();
+    cout << "Subarray Time: " << subArrayTime.format();
 
     int sizeFirst = 1 << (n / 2);
     int sizeSecond = 1 << (n - n / 2);
 
     cout << "Sorting" << endl;
     // Sort second (we need to do doing binary search in it)
+    boost::timer::auto_cpu_timer sortTime;
     sort(second, second + sizeSecond, Subset::CompareSum);
+    cout << "Sort time: " << sortTime.format();
 
     // To keep track of the minimum sum of a subset
     // such that the minimum sum is greater than S
     auto *min = new Subset();
     min->sum = power(to_ZZ(10), 250);
 
-    auto *secondMin = new Subset();
-    secondMin->sum = power(to_ZZ(10), 250);
-//
-//    auto *thirdMin = new Subset();
-//    thirdMin->sum = power(to_ZZ(10), 250);
-
     // Traverse all elements of first and do Binary Search
-    // for a pair in second with maximum sum less than S.
+    // for a pair in second with minimum sum greater than S
     // S = (y[i] + x[i])
-    cout << "Traversing First Min" << endl;
-    thread traverseFirst(getSubset, threshold, first, second, 0, sizeSecond / 2, sizeSecond, min);
-    cout << "Traversing Second Min" << endl;
-    thread traverseSecond(getSubset, threshold, first, second, sizeFirst / 2, sizeSecond, sizeSecond, secondMin);
-//    cout << "Traversing Third Min" << endl;
-//    thread traverseThird(getSubset, threshold, first, second, 0, sizeSecond, sizeSecond, thirdMin);
-
-    traverseFirst.join();
-    traverseSecond.join();
-//    traverseThird.join();
-
-    if (min->sum < secondMin->sum) {
-        delete secondMin;
-        return min;
-    } else {
-        delete min;
-        return secondMin;
-    }
+    cout << "Traversing" << endl;
+    getSubset(threshold, first, second, 0, sizeSecond, sizeSecond, min);
+    return min;
 }
 
 void getSubset(const ZZ &threshold, const Subset *first, const Subset *second, int offset, int iterSize, int sizeSecond, Subset *min) {
@@ -125,6 +110,7 @@ int main() {
     int meetInMiddleSize = util.n / 2;
     int quarterToIncludeSize = util.n / 4;
     int bothSize = meetInMiddleSize + quarterToIncludeSize;
+
     while(util.currentMinimum != util.threshold) {
         cout << "Making arrays" << endl;
         auto *first = new Subset[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
@@ -171,7 +157,10 @@ int main() {
         }
         threshold -= sum;
 
+        boost::timer::auto_cpu_timer fullTime;
         Subset *res = solveSubsetSum(middle, meetInMiddleSize, threshold, first, second, meetInMiddleIndices);
+        cout << "Total Time: " << fullTime.format();
+
         cout << "Intial Res: ";
         for (auto it = res->indices.begin(); it != res->indices.end(); ++it) {
             cout << *it << " ";
@@ -193,12 +182,11 @@ int main() {
             ZZ total = ZZ(res->sum + sum);
             cout << "res->sum + sum: " << total << endl << "actualSum: " << actualSum << endl;
             cout << "Logged Diff: " << log(total - util.threshold)/log(10)  << endl;
-
             util.saveIfBetter(static_cast<int>(res->indices.size()), arr, total);
-            util.outputArray(arr, static_cast<int>(res->indices.size()));
 
             delete[] arr;
         }
+
 
         delete[] removedQuarterIndices;
         delete[] removedQuarter;
