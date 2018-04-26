@@ -1,5 +1,3 @@
-#include <boost/timer/timer.hpp>
-#include <boost/chrono.hpp>
 #include <iostream>
 #include <set>
 #include <thread>
@@ -46,7 +44,6 @@ void calculateSubsets(ZZ *a, Subset *possibleSubsets, int n, int offset, int *in
 Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Subset *first, Subset *second, int *indexArray) {
     // Compute all subset sums of first and second
     // halves
-    boost::timer::auto_cpu_timer subArrayTime;
     cout << "Computing First SubArray" << endl;
     thread calcFirst(calculateSubsets, givenArray, first, n / 2, 0, indexArray);
     cout << "Computing Second SubArray" << endl;
@@ -54,16 +51,14 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Subset *firs
 
     calcFirst.join();
     calcSecond.join();
-    cout << "Subarray Time: " << subArrayTime.format();
 
     int sizeFirst = 1 << (n / 2);
     int sizeSecond = 1 << (n - n / 2);
 
-    cout << "Sorting" << endl;
+
     // Sort second (we need to do doing binary search in it)
-    boost::timer::auto_cpu_timer sortTime;
+    cout << "Sorting" << endl;
     sort(second, second + sizeSecond, Subset::CompareSum);
-    cout << "Sort time: " << sortTime.format();
 
     // To keep track of the minimum sum of a subset
     // such that the minimum sum is greater than S
@@ -157,9 +152,7 @@ int main() {
         }
         threshold -= sum;
 
-        boost::timer::auto_cpu_timer fullTime;
         Subset *res = solveSubsetSum(middle, meetInMiddleSize, threshold, first, second, meetInMiddleIndices);
-        cout << "Total Time: " << fullTime.format();
 
         cout << "Intial Res: ";
         for (auto it = res->indices.begin(); it != res->indices.end(); ++it) {
