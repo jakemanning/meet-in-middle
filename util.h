@@ -21,7 +21,7 @@ private:
     int sampleSize = 0;
     ZZ *fillArray();
     ZZ readPreviousMin();
-    void saveBest(int sampleSize, const int *betterSample, double logDifference);
+    void saveBest(int sampleSize, const int *betterSample, double logDifference, int quarterSize, int middleSize);
     int smallestSubsetWithSum(ZZ arr[], int n, const ZZ &threshold);
 public:
     ZZ currentMinimum;
@@ -32,7 +32,7 @@ public:
     json &getJson(ifstream &in, json &input) const;
     ZZ minValue(const json &input) const;
     int sizeOfFirstSubsetOverThreshold(const int *sample);
-    void saveIfBetter(int size, const int *sample, const ZZ &sum);
+    void saveIfBetter(int size, const int *sample, const ZZ &sum, int quarterSize, int middleSize);
     int *takeIndexSample(int sampleSize, int arraySize);
     ZZ *takeValueSample(int sampleSize, int arraySize, ZZ *original);
     ZZ *convertToZZ(int sampleSize, const ZZ *original, const int *indices) const;
@@ -158,7 +158,7 @@ int Util::sizeOfFirstSubsetOverThreshold(const int *sample) {
     return betterSampleSize;
 }
 
-void Util::saveIfBetter(int size, const int* sample, const ZZ &sum) {
+void Util::saveIfBetter(int size, const int* sample, const ZZ &sum, int quarterSize, int middleSize) {
     if (sum >= threshold && sum < currentMinimum) {
         auto *betterSample = new int[size];
         for (int j = 0; j < size; ++j) {
@@ -174,18 +174,20 @@ void Util::saveIfBetter(int size, const int* sample, const ZZ &sum) {
             logDifference = log(difference) / log(10);
         }
         cout << "FOUND A BETTER ONE: " << logDifference << endl;
-        saveBest(size, betterSample, logDifference);
+        saveBest(size, betterSample, logDifference, quarterSize, middleSize);
         delete[] betterSample;
     }
 }
 
-void Util::saveBest(int sampleSize, const int *betterSample, double logDifference) {
+void Util::saveBest(int sampleSize, const int *betterSample, double logDifference, int quarterSize, int middleSize) {
     json j;
     auto now = chrono::system_clock::now();
     time_t currentTime = chrono::system_clock::to_time_t(now);
     j["time"] = ctime(&currentTime);
     j["size"] = sampleSize;
     j["logged_difference"] = logDifference;
+    j["quarterSize"] = quarterSize;
+    j["middleSize"] = middleSize;
     for (int i = 0; i < sampleSize; ++i) {
             j["array"].push_back(betterSample[i]);
         }

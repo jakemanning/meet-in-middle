@@ -109,8 +109,9 @@ void getBestSubset(const ZZ &threshold, Sum *first, Sum *second, int offset, int
         }
     }
     // Calculate the actual subsets of the subsets using firstMinIndex and secondMinIndex
-    calcSubset(nullptr, nullptr, firstMinIndex, 25, 0, indexArray, false, min);
-    calcSubset(nullptr, nullptr, secondMinIndex, 25, 25, indexArray, false, min);
+    int logged = (int)(log(sizeSecond)/log(2));
+    calcSubset(nullptr, nullptr, firstMinIndex, logged , 0, indexArray, false, min);
+    calcSubset(nullptr, nullptr, secondMinIndex, logged, logged, indexArray, false, min);
 }
 
 
@@ -163,12 +164,12 @@ int main() {
     // Increasing this number increases the execution time exponentially.
     // The higher this is, the better (theoretically), since it can evaluate more subsets
     // Anecdotally, 54 seems the max I'd want to use
-    int meetInMiddleSize = util.n / 2;
+    int meetInMiddleSize = 50;
     // This number can be anything, simply how many we want to include by default
-    int quarterToIncludeSize = 13;
+    int quarterToIncludeSize = 12;
 
 
-    int bothSize = meetInMiddleSize + quarterToIncludeSize;
+    int bothSize = meetInMiddleSize + quarterToIncludeSize; // Must be at least 30
     cout << "Making arrays" << endl;
     auto *first = new Sum[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
     auto *second = new Sum[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
@@ -260,7 +261,7 @@ int main() {
                 cout << "ERROR: first and second sum are not equal" << endl;
             }
             cout << "Logged Diff: " << log(total - util.threshold) / log(10) << endl;
-            util.saveIfBetter(static_cast<int>(res->indices.size()), arr, total);
+            util.saveIfBetter(static_cast<int>(res->indices.size()), arr, total, quarterToIncludeSize, meetInMiddleSize);
 
             delete[] arr;
         }
