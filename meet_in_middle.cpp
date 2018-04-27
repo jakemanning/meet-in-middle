@@ -77,7 +77,8 @@ void calculateSubsets(ZZ *arr, Sum *possibleSubsets, int n, int offset, int *ind
 
 // Calculates the best subset by finding the sums from 'first' and 'second' that is the smallest
 // Precondition: second is sorted, so we can do a binary search on it
-void getSubset(const ZZ &threshold, Sum *first, Sum *second, int offset, int sizeFirst, int sizeSecond, Subset *min, int *indexArray) {
+void getBestSubset(const ZZ &threshold, Sum *first, Sum *second, int offset, int sizeFirst, int sizeSecond, Subset *min,
+                   int *indexArray) {
     boost::progress_display progress(static_cast<unsigned long>(sizeFirst));
 
     // Rather than updating the subset everytime we find a better sum,
@@ -119,7 +120,7 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, 
     // halves
     auto subArrayNow = chrono::system_clock::now();
     time_t timeSub = chrono::system_clock::to_time_t(subArrayNow);
-    cout << "Time before SubArray calculations: " << ctime(&timeSub);
+    cout << "Time Stage 1: " << ctime(&timeSub);
     cout << "Computing First SubArray" << endl;
     thread calcFirst(calculateSubsets, givenArray, first, n / 2, 0, indexArray);
     cout << "Computing Second SubArray" << endl;
@@ -134,7 +135,7 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, 
     // Sort second (we need to do doing binary search in it)
     auto now = chrono::system_clock::now();
     time_t currentTime = chrono::system_clock::to_time_t(now);
-    cout << "Time before sort: " << ctime(&currentTime);
+    cout << "Time Stage 2: " << ctime(&currentTime);
     cout << "Sorting" << endl;
     sort(second, second + sizeSecond, Sum::CompareSum);
 
@@ -148,9 +149,9 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, 
     // S = (y[i] + x[i])
     auto traverse = chrono::system_clock::now();
     time_t traverseTime = chrono::system_clock::to_time_t(traverse);
-    cout << "Time before Traversing: " << ctime(&traverseTime);
-    cout << "Traversing" << endl;
-    getSubset(threshold, first, second, 0, sizeFirst, sizeSecond, min, indexArray);
+    cout << "Time Stage 3: " << ctime(&traverseTime);
+    cout << "Calculating Best Subset" << endl;
+    getBestSubset(threshold, first, second, 0, sizeFirst, sizeSecond, min, indexArray);
     return min;
 }
 
@@ -158,7 +159,7 @@ int main() {
     bool debug = false;
     Util util(100, 113027942, "middle_lowest_difference.json");
     int meetInMiddleSize = util.n / 2;
-    int quarterToIncludeSize = util.n / 4;
+    int quarterToIncludeSize = util.n / 2;
     int bothSize = meetInMiddleSize + quarterToIncludeSize;
     auto *first = new Sum[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
     auto *second = new Sum[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
