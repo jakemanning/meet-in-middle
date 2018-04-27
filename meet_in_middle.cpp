@@ -11,7 +11,7 @@ public:
     ZZ sum;
     // This is kinda hacky, had to add this to ensure the index of the 'second' doesn't get lost after sorting it
     // However, the memory savings are worth it - (used to be storing all the indices like in the 'Subset' class)
-    short index;
+    int index;
 
     static struct _CompareSum {
         bool operator()(const Sum &left, const Sum &right) {
@@ -71,7 +71,7 @@ void calcSubset(ZZ *a, Sum *possibleSubsets, int i, int n, int offset, int *inde
 void calculateSubsets(ZZ *arr, Sum *possibleSubsets, int n, int offset, int *indexArray) {
     for (int i = 0; i < (1 << n); i++) {
         calcSubset(arr, possibleSubsets, i, n, offset, indexArray, true, nullptr);
-        possibleSubsets[i].index = static_cast<short>(i);
+        possibleSubsets[i].index = i;
     }
 }
 
@@ -162,9 +162,10 @@ int main() {
     // Should be divisible by 2.
     // Increasing this number increases the execution time exponentially.
     // The higher this is, the better (theoretically), since it can evaluate more subsets
-    int meetInMiddleSize = 56;
+    // Anecdotally, 54 seems the max I'd want to use
+    int meetInMiddleSize = util.n / 2;
     // This number can be anything, simply how many we want to include by default
-    int quarterToIncludeSize = 0;
+    int quarterToIncludeSize = 7;
 
 
     int bothSize = meetInMiddleSize + quarterToIncludeSize;
@@ -224,11 +225,15 @@ int main() {
         Subset *res = solveSubsetSum(middle, meetInMiddleSize, threshold, first, second, meetInMiddleIndices);
 
         if (debug) {
-            cout << "Intial Res: ";
-            for (auto it = res->indices.begin(); it != res->indices.end(); ++it) {
-                cout << *it << " ";
+            cout << "Intial Res: [";
+            int count = 0;
+            for (auto it = res->indices.begin(); it != res->indices.end(); ++it, ++count) {
+                cout << *it;
+                if (count != res->indices.size() - 1) {
+                    cout << ", ";
+                }
             }
-            cout << endl;
+            cout << "]" << endl;
         }
 
         if (res->sum < power(to_ZZ(10), 103)) {
@@ -248,7 +253,12 @@ int main() {
                 cout << "res->sum + sum: " << total << endl << "actualSum: " << actualSum << endl;
                 util.outputArray(arr, res->indices.size());
             }
-
+            if (total != actualSum) {
+                if (!debug) {
+                    cout << "res->sum + sum: " << total << endl << "actualSum: " << actualSum << endl;
+                }
+                cout << "ERROR: first and second sum are not equal" << endl;
+            }
             cout << "Logged Diff: " << log(total - util.threshold) / log(10) << endl;
             util.saveIfBetter(static_cast<int>(res->indices.size()), arr, total);
 
@@ -257,7 +267,7 @@ int main() {
 
         auto now = chrono::system_clock::now();
         time_t currentTime = chrono::system_clock::to_time_t(now);
-        cout << "Time Finished: " << ctime(&currentTime);
+        cout << "Time Finished: " << ctime(&currentTime) << endl;
 
         delete[] removedQuarterIndices;
         delete[] removedQuarter;
@@ -266,7 +276,6 @@ int main() {
         delete[] middle;
         delete[] quarter;
         delete res;
-        cout << endl << endl;
     }
     cout << "Finished! " << endl << "Best: ";
     ifstream in(util.fileName);
