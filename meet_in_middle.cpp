@@ -31,7 +31,7 @@ public:
 class Subset {
 public:
     ZZ sum;
-    set<int> indices; // Stores the indices of
+    std::set<int> indices; // Stores the indices of
 
     static struct _CompareSum {
         bool operator()(const Subset &left, const Subset &right) {
@@ -191,7 +191,7 @@ int main() {
             cout << "Meet in middle Indices: ";
             util.outputArray(meetInMiddleIndices, meetInMiddleSize);
         }
-        set<int> quarterSet; // The quarter that we will definitely include
+        std::set<int> quarterSet; // The quarter that we will definitely include
         for (int i = 0; i < bothSize; ++i) {
             quarterSet.insert(i);
         }
