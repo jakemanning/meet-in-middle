@@ -165,7 +165,7 @@ int main() {
     // Anecdotally, 54 seems the max I'd want to use
     int meetInMiddleSize = util.n / 2;
     // This number can be anything, simply how many we want to include by default
-    int quarterToIncludeSize = 7;
+    int quarterToIncludeSize = 13;
 
 
     int bothSize = meetInMiddleSize + quarterToIncludeSize;
