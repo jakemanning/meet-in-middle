@@ -1,4 +1,5 @@
 #include <boost/progress.hpp>
+#include <cstdlib>
 #include <iostream>
 #include <set>
 #include <thread>
@@ -156,9 +157,8 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, 
     return min;
 }
 
-int main() {
+int main(int argc, char** argv) {
     bool debug = false;
-    Util util(100, 113027942, "middle_lowest_difference.json");
 
     // Should be divisible by 2.
     // Increasing this number increases the execution time exponentially.
@@ -168,12 +168,23 @@ int main() {
     // This number can be anything, simply how many we want to include by default
     int quarterToIncludeSize = 12;
 
+    if (argc == 2) {
+        meetInMiddleSize = atoi(argv[1]);
+    } else if (argc == 3) {
+        meetInMiddleSize = atoi(argv[1]);
+        quarterToIncludeSize = atoi(argv[2]);
+    }
 
-    int bothSize = meetInMiddleSize + quarterToIncludeSize; // Must be at least 30
+    cout << "Meet in middle size: " << meetInMiddleSize << endl;
+    cout << "Quarter to include size: " << quarterToIncludeSize << endl;
+
+    Util util(100, 113027942, "middle_lowest_difference.json");
+
+    int bothSize = meetInMiddleSize + quarterToIncludeSize; // Must be at least 30 because 30 is smallest possible subset will have a sum greater than S
     cout << "Making arrays" << endl;
     auto *first = new Sum[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
     auto *second = new Sum[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
-    cout << "Made arrays" << endl;
+    cout << "Made arrays" << endl << endl;
 
     while(util.currentMinimum != util.threshold) {
         ZZ threshold = util.threshold;
