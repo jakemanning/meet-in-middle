@@ -6,10 +6,32 @@
 
 using namespace std;
 
+class Sum {
+public:
+    ZZ sum;
+    // This is kinda hacky, had to add this to ensure the index of the 'second' doesn't get lost after sorting it
+    // However, the memory savings are worth it - (used to be storing all the indices like in the 'Subset' class)
+    int index;
+
+    static struct _CompareSum {
+        bool operator()(const Sum &left, const Sum &right) {
+            return static_cast<bool>(left.sum < right.sum);
+        }
+
+        bool operator()(const Sum &left, const ZZ &right) {
+            return static_cast<bool>(left.sum < right);
+        }
+
+        bool operator()(const ZZ &left, const Sum &right) {
+            return static_cast<bool>(left < right.sum);
+        }
+    } CompareSum;
+};
+
 class Subset {
 public:
     ZZ sum;
-    set<int> indices;
+    set<int> indices; // Stores the indices of
 
     static struct _CompareSum {
         bool operator()(const Subset &left, const Subset &right) {
@@ -26,24 +48,73 @@ public:
     } CompareSum;
 };
 
-void getSubset(const ZZ &threshold, const Subset *first, const Subset *second, int offset, int iterSize, int sizeSecond, Subset *min);
-
-void calculateSubsets(ZZ *a, Subset *possibleSubsets, int n, int offset, int *indexArray) {
-    for (int i = 0; i < (1 << n); i++) {
-        possibleSubsets[i].indices.clear();
-        ZZ s(0);
-        for (int j = 0; j < n; j++)
-            if (i & (1 << j)) {
-                int index = j + offset;
+// This is pretty messy, but it essentially will do one of the following:
+// Calculate the subsets of a particular index 'i', or
+// Finds the subset indices for a particular index 'i'
+void calcSubset(ZZ *a, Sum *possibleSubsets, int i, int n, int offset, int *indexArray, bool calcSum, Subset *subset) {
+    ZZ s(0);
+    for (int j = 0; j < n; j++)
+        if (i & (1 << j)) {
+            int index = j + offset;
+            if (calcSum) {
                 s += a[index];
-                possibleSubsets[i].indices.insert(indexArray[index]);
+            } else {
+                subset->indices.insert(indexArray[index]);
             }
+        }
+    if (calcSum) {
         possibleSubsets[i].sum = s;
     }
 }
 
-// Returns the maximum possible sum less or equal to S
-Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Subset *first, Subset *second, int *indexArray) {
+// Calculates all possible subset sums of 'arr'
+void calculateSubsets(ZZ *arr, Sum *possibleSubsets, int n, int offset, int *indexArray) {
+    for (int i = 0; i < (1 << n); i++) {
+        calcSubset(arr, possibleSubsets, i, n, offset, indexArray, true, nullptr);
+        possibleSubsets[i].index = i;
+    }
+}
+
+// Calculates the best subset by finding the sums from 'first' and 'second' that is the smallest
+// Precondition: second is sorted, so we can do a binary search on it
+void getSubset(const ZZ &threshold, Sum *first, Sum *second, int offset, int sizeFirst, int sizeSecond, Subset *min, int *indexArray) {
+    boost::progress_display progress(static_cast<unsigned long>(sizeFirst));
+
+    // Rather than updating the subset everytime we find a better sum,
+    // we simply store the index of
+    int firstMinIndex = 0;
+    int secondMinIndex = 0;
+    for (int i = offset; i < sizeFirst; i++) {
+        ++progress;
+        ZZ currX = first[i].sum;
+        if (currX <= threshold) {
+            // lower_bound() returns the first address
+            // which has value greater than or equal to
+            // S-first[i].
+            int index = lower_bound(second, second + sizeSecond, threshold - currX, Sum::CompareSum) - second;
+
+            // If S-first[i] was not in array second then decrease
+            // p by 1
+            if (index == sizeSecond) {
+                index -= 1;
+            }
+
+            ZZ total = second[index].sum + currX;
+            if (total < min->sum && total >= threshold) {
+                firstMinIndex = i;
+                secondMinIndex = second[index].index;
+                min->sum = total;
+            }
+        }
+    }
+    // Calculate the actual subsets of the subsets using firstMinIndex and secondMinIndex
+    calcSubset(nullptr, nullptr, firstMinIndex, 25, 0, indexArray, false, min);
+    calcSubset(nullptr, nullptr, secondMinIndex, 25, 25, indexArray, false, min);
+}
+
+
+// Returns the maximum possible sum greater than or equal to S
+Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, Sum *second, int *indexArray) {
     // Compute all subset sums of first and second
     // halves
     auto subArrayNow = chrono::system_clock::now();
@@ -60,13 +131,12 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Subset *firs
     int sizeFirst = 1 << (n / 2);
     int sizeSecond = 1 << (n - n / 2);
 
-
     // Sort second (we need to do doing binary search in it)
     auto now = chrono::system_clock::now();
     time_t currentTime = chrono::system_clock::to_time_t(now);
     cout << "Time before sort: " << ctime(&currentTime);
     cout << "Sorting" << endl;
-    sort(second, second + sizeSecond, Subset::CompareSum);
+    sort(second, second + sizeSecond, Sum::CompareSum);
 
     // To keep track of the minimum sum of a subset
     // such that the minimum sum is greater than S
@@ -80,50 +150,18 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Subset *firs
     time_t traverseTime = chrono::system_clock::to_time_t(traverse);
     cout << "Time before Traversing: " << ctime(&traverseTime);
     cout << "Traversing" << endl;
-    getSubset(threshold, first, second, 0, sizeFirst, sizeSecond, min);
+    getSubset(threshold, first, second, 0, sizeFirst, sizeSecond, min, indexArray);
     return min;
 }
-
-void getSubset(const ZZ &threshold, const Subset *first, const Subset *second, int offset, int iterSize, int sizeSecond, Subset *min) {
-    boost::progress_display progress(static_cast<unsigned long>(iterSize));
-    int firstPair = 0;
-    int secondPair = 0;
-    for (int i = offset; i < iterSize; i++) {
-        ++progress;
-        ZZ currX = first[i].sum;
-        if (currX <= threshold) {
-            // lower_bound() returns the first address
-            // which has value greater than or equal to
-            // S-first[i].
-            int index = lower_bound(second, second + sizeSecond, threshold - currX, Subset::CompareSum) - second;
-
-            // If S-first[i] was not in array second then decrease
-            // p by 1
-            if (index == sizeSecond) {
-                index -= 1;
-            }
-
-            ZZ total = second[index].sum + currX;
-            if (total < min->sum && total >= threshold) {
-                firstPair = i;
-                secondPair = index;
-                min->sum = total;
-            }
-        }
-    }
-    min->indices.insert(first[firstPair].indices.begin(), first[firstPair].indices.end());
-    min->indices.insert(second[secondPair].indices.begin(), second[secondPair].indices.end());
-}
-
 
 int main() {
     bool debug = false;
     Util util(100, 113027942, "middle_lowest_difference.json");
     int meetInMiddleSize = util.n / 2;
-    int quarterToIncludeSize = util.n / 5;
+    int quarterToIncludeSize = util.n / 4;
     int bothSize = meetInMiddleSize + quarterToIncludeSize;
-    auto *first = new Subset[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
-    auto *second = new Subset[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
+    auto *first = new Sum[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
+    auto *second = new Sum[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
 
     while(util.currentMinimum != util.threshold) {
         cout << "Making arrays" << endl;
@@ -162,7 +200,7 @@ int main() {
         }
 
         ZZ sum(0);
-        ZZ *middle = util.convertToZZ(meetInMiddleSize, removedQuarter, meetInMiddleIndices);
+        ZZ *middle = util.convertToZZ(meetInMiddleSize, removedQuarter, meetInMiddleIndices); // The actual values
         ZZ *quarter = util.convertToZZ(quarterToIncludeSize, removedQuarter, quarterToInclude);
         if (debug) {
             cout << "Middle: ";
@@ -200,7 +238,9 @@ int main() {
             ZZ total = ZZ(res->sum + sum);
             if (debug) {
                 cout << "res->sum + sum: " << total << endl << "actualSum: " << actualSum << endl;
+                util.outputArray(arr, res->indices.size());
             }
+
             cout << "Logged Diff: " << log(total - util.threshold) / log(10) << endl;
             util.saveIfBetter(static_cast<int>(res->indices.size()), arr, total);
 
