@@ -11,7 +11,7 @@ public:
     ZZ sum;
     // This is kinda hacky, had to add this to ensure the index of the 'second' doesn't get lost after sorting it
     // However, the memory savings are worth it - (used to be storing all the indices like in the 'Subset' class)
-    int index;
+    short index;
 
     static struct _CompareSum {
         bool operator()(const Sum &left, const Sum &right) {
@@ -71,7 +71,7 @@ void calcSubset(ZZ *a, Sum *possibleSubsets, int i, int n, int offset, int *inde
 void calculateSubsets(ZZ *arr, Sum *possibleSubsets, int n, int offset, int *indexArray) {
     for (int i = 0; i < (1 << n); i++) {
         calcSubset(arr, possibleSubsets, i, n, offset, indexArray, true, nullptr);
-        possibleSubsets[i].index = i;
+        possibleSubsets[i].index = static_cast<short>(i);
     }
 }
 
@@ -142,7 +142,7 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, 
     // To keep track of the minimum sum of a subset
     // such that the minimum sum is greater than S
     auto *min = new Subset();
-    min->sum = power(to_ZZ(10), 250);
+    min->sum = power(to_ZZ(10), 103); // This is greater than the max possible sum there can be
 
     // Traverse all elements of first and do Binary Search
     // for a pair in second with minimum sum greater than S
@@ -158,15 +158,22 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, 
 int main() {
     bool debug = false;
     Util util(100, 113027942, "middle_lowest_difference.json");
-    int meetInMiddleSize = util.n / 2;
-    int quarterToIncludeSize = util.n / 2;
+
+    // Should be divisible by 2.
+    // Increasing this number increases the execution time exponentially.
+    // The higher this is, the better (theoretically), since it can evaluate more subsets
+    int meetInMiddleSize = 56;
+    // This number can be anything, simply how many we want to include by default
+    int quarterToIncludeSize = 0;
+
+
     int bothSize = meetInMiddleSize + quarterToIncludeSize;
+    cout << "Making arrays" << endl;
     auto *first = new Sum[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
     auto *second = new Sum[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
+    cout << "Made arrays" << endl;
 
     while(util.currentMinimum != util.threshold) {
-        cout << "Making arrays" << endl;
-        cout << "Made arrays" << endl;
         ZZ threshold = util.threshold;
         int *removedQuarterIndices = util.takeIndexSample(bothSize, util.n);
         ZZ *removedQuarter = util.convertToZZ(bothSize, util.array,
@@ -224,7 +231,7 @@ int main() {
             cout << endl;
         }
 
-        if (res->sum != power(to_ZZ(10), 250)) {
+        if (res->sum < power(to_ZZ(10), 103)) {
             for (int i = 0; i < quarterToIncludeSize; ++i) {
                 res->indices.insert(quarterToInclude[i]);
             }
@@ -250,7 +257,7 @@ int main() {
 
         auto now = chrono::system_clock::now();
         time_t currentTime = chrono::system_clock::to_time_t(now);
-        cout << "Deleting: " << ctime(&currentTime);
+        cout << "Time Finished: " << ctime(&currentTime);
 
         delete[] removedQuarterIndices;
         delete[] removedQuarter;
@@ -259,7 +266,7 @@ int main() {
         delete[] middle;
         delete[] quarter;
         delete res;
-        cout << "Deleted" << endl << endl;
+        cout << endl << endl;
     }
     cout << "Finished! " << endl << "Best: ";
     ifstream in(util.fileName);
