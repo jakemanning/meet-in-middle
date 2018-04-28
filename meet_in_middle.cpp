@@ -282,6 +282,8 @@ int main(int argc, char** argv) {
         cout << "Time Finished: " << ctime(&currentTime) << endl;
 
         uniform_int_distribution<int> quarterDist(0, 20); // Choose a new quarterDistrubtion
+        quarterToIncludeSize = quarterDist(util.mt);
+        cout << "Now using quarterSize: " << quarterToIncludeSize << endl;
 
         delete[] removedQuarterIndices;
         delete[] removedQuarter;
