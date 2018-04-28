@@ -185,6 +185,9 @@ int main(int argc, char** argv) {
     auto *first = new Sum[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
     auto *second = new Sum[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
     cout << "Made arrays" << endl << endl;
+
+    random_device randomDevice;
+    mt19937 mersenneTwister(randomDevice());
     uniform_int_distribution<int> quarterDist(0, 20); // To choose a new quarter size
 
     while(util.currentMinimum != util.threshold) {
@@ -283,6 +286,7 @@ int main(int argc, char** argv) {
         cout << "Time Finished: " << ctime(&currentTime) << endl;
 
         quarterToIncludeSize = quarterDist(util.mt);
+        bothSize = quarterToIncludeSize + meetInMiddleSize;
         cout << "Now using quarterSize: " << quarterToIncludeSize << endl;
 
         delete[] removedQuarterIndices;
