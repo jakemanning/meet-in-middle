@@ -16,7 +16,6 @@ using namespace std;
 
 class Util {
 private:
-    mt19937 mt{};
     int minPossibleElementsInSubset = 0;
     int sampleSize = 0;
     ZZ *fillArray();
@@ -24,6 +23,7 @@ private:
     void saveBest(int sampleSize, const int *betterSample, double logDifference, int quarterSize, int middleSize);
     int smallestSubsetWithSum(ZZ arr[], int n, const ZZ &threshold);
 public:
+    mt19937 mt{};
     ZZ currentMinimum;
     int n;
     ZZ threshold;

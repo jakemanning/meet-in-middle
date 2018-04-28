@@ -166,7 +166,7 @@ int main(int argc, char** argv) {
     // Anecdotally, 54 seems the max I'd want to use
     int meetInMiddleSize = 50;
     // This number can be anything, simply how many we want to include by default
-    int quarterToIncludeSize = 12;
+    int quarterToIncludeSize = 22;
 
     if (argc == 2) {
         meetInMiddleSize = atoi(argv[1]);
@@ -280,6 +280,8 @@ int main(int argc, char** argv) {
         auto now = chrono::system_clock::now();
         time_t currentTime = chrono::system_clock::to_time_t(now);
         cout << "Time Finished: " << ctime(&currentTime) << endl;
+
+        uniform_int_distribution<int> quarterDist(0, 20); // Choose a new quarterDistrubtion
 
         delete[] removedQuarterIndices;
         delete[] removedQuarter;
