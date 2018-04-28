@@ -185,6 +185,7 @@ int main(int argc, char** argv) {
     auto *first = new Sum[(1<<(meetInMiddleSize/2))]; // Of size 2^(n/2)
     auto *second = new Sum[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
     cout << "Made arrays" << endl << endl;
+    uniform_int_distribution<int> quarterDist(0, 20); // To choose a new quarter size
 
     while(util.currentMinimum != util.threshold) {
         ZZ threshold = util.threshold;
@@ -281,7 +282,6 @@ int main(int argc, char** argv) {
         time_t currentTime = chrono::system_clock::to_time_t(now);
         cout << "Time Finished: " << ctime(&currentTime) << endl;
 
-        uniform_int_distribution<int> quarterDist(0, 20); // Choose a new quarterDistrubtion
         quarterToIncludeSize = quarterDist(util.mt);
         cout << "Now using quarterSize: " << quarterToIncludeSize << endl;
 
