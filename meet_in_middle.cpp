@@ -51,7 +51,7 @@ public:
 
 // This is pretty messy, but it essentially will do one of the following:
 // Calculate the subsets of a particular index 'i', or
-// Finds the subset indices for a particular index 'i'
+// Finds which numbers are in a subset for a particular 'i'
 void calcSubset(ZZ *a, Sum *possibleSubsets, int i, int n, int offset, int *indexArray, bool calcSum, Subset *subset) {
     ZZ s(0);
     for (int j = 0; j < n; j++)
@@ -83,7 +83,7 @@ void getBestSubset(const ZZ &threshold, Sum *first, Sum *second, int offset, int
     boost::progress_display progress(static_cast<unsigned long>(sizeFirst));
 
     // Rather than updating the subset everytime we find a better sum,
-    // we simply store the index of
+    // we simply store the index of the minimum
     int firstMinIndex = 0;
     int secondMinIndex = 0;
     for (int i = offset; i < sizeFirst; i++) {
@@ -109,14 +109,15 @@ void getBestSubset(const ZZ &threshold, Sum *first, Sum *second, int offset, int
             }
         }
     }
-    // Calculate the actual subsets of the subsets using firstMinIndex and secondMinIndex
+    // sizeSecond is 2^(n/2) and log(2^(n/2), base=2) is 'n'
     int logged = (int)(log(sizeSecond)/log(2));
+    // Calculate the actual subsets of the subsets using firstMinIndex and secondMinIndex
     calcSubset(nullptr, nullptr, firstMinIndex, logged , 0, indexArray, false, min);
     calcSubset(nullptr, nullptr, secondMinIndex, logged, logged, indexArray, false, min);
 }
 
 
-// Returns the maximum possible sum greater than or equal to S
+// Returns the minimum possible sum greater than or equal to S
 Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, Sum *second, int *indexArray) {
     // Compute all subset sums of first and second
     // halves
@@ -134,7 +135,7 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, 
     int sizeFirst = 1 << (n / 2);
     int sizeSecond = 1 << (n - n / 2);
 
-    // Sort second (we need to do doing binary search in it)
+    // Sort second (we need to do binary search in it)
     auto now = chrono::system_clock::now();
     time_t currentTime = chrono::system_clock::to_time_t(now);
     cout << "Time Stage 2: " << ctime(&currentTime);
@@ -158,7 +159,7 @@ Subset* solveSubsetSum(ZZ givenArray[], int n, const ZZ &threshold, Sum *first, 
 }
 
 int main(int argc, char** argv) {
-    bool debug = false;
+    bool debug = true;
 
     // Should be divisible by 2.
     // Increasing this number increases the execution time exponentially.
@@ -186,8 +187,6 @@ int main(int argc, char** argv) {
     auto *second = new Sum[1<<(meetInMiddleSize/2)]; // Of size 2^(n/2)
     cout << "Made arrays" << endl << endl;
 
-    random_device randomDevice;
-    mt19937 mersenneTwister(randomDevice());
     uniform_int_distribution<int> quarterDist(0, 20); // To choose a new quarter size
 
     while(util.currentMinimum != util.threshold) {

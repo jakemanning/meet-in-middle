@@ -15,7 +15,7 @@ int main() {
             myMin = both;
             cout << "Current session improved: " << (log(both) / log(10)) << endl;
         }
-        util.saveIfBetter(subsetOfSample, sample, util.sum);
+        util.saveIfBetter(subsetOfSample, sample, util.sum, 0, 0);
         delete[] sample;
     } while(util.sum != util.threshold);
     return 0;

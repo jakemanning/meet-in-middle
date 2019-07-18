@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.10.3 FATAL_ERROR)
 project(middle)
 project(random)
 project(testing)

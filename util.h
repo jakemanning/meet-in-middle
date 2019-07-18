@@ -9,6 +9,7 @@
 #include <NTL/ZZ.h>
 #include <string>
 #include <random>
+#include <iomanip>
 
 using json = nlohmann::json;
 using namespace NTL;
@@ -106,7 +107,7 @@ ZZ Util::minValue(const json &input) const {
 }
 
 int *Util::takeRandomSample() {
-    uniform_int_distribution<int> sizeDist(minPossibleElementsInSubset, n - 1); // To get sample size (30 is the smallest possible sum with n=100)
+    uniform_int_distribution<int> sizeDist(minPossibleElementsInSubset, 51); // To get sample size (30 is the smallest possible sum with n=100)
     int sampleSize = sizeDist(mt);
     this->sampleSize = sampleSize;
     return takeIndexSample(sampleSize, n);
