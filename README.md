@@ -9,6 +9,10 @@ Find a subset T that exists in M such that the sum of the elements in T is great
 
 Attempting to find the smallest difference: sum(T) - S
 
+####  Sample console output:
+
+![Sample output](demo-pictures/sample_output.png)
+
 
 ## Installation
 - install cmake
